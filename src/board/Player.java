@@ -144,14 +144,15 @@ public class Player {
         int panNumber = 0;
         int displaySize = this.getDisplay().size();
         int cookMushroomListSize = cookingmushrooms.size();
-        for (int i = 0; i < displaySize; i++) {
-            boolean equals = this.getDisplay().getElementAt(i).getType().equals(CardType.PAN);
+
+        for (int i = 0; i < cookMushroomListSize; i++) {
+            boolean equals = cookingmushrooms.get(i).getType().equals(CardType.PAN);
             if (equals) {
                 panNumber++;
             }
         }
-        for (int i = 0; i < cookMushroomListSize; i++) {
-            boolean equals = cookingmushrooms.get(i).getType().equals(CardType.PAN);
+        for (int i = 0; i < displaySize; i++) {
+            boolean equals = this.getDisplay().getElementAt(i).getType().equals(CardType.PAN);
             if (equals) {
                 panNumber++;
             }
@@ -211,18 +212,18 @@ public class Player {
             return false;
         }
 
-        int butterSize = 0;
-        int ciderSize = 0;
+        int butterNumber = 0;
+        int ciderNumber = 0;
         for (int i = 0; i <cookMushroomListSize; i++) {
-            CardType type = cookingmushrooms.get(i).getType();
-            if (type.equals(CardType.BUTTER)) {
-                butterSize++;
+            CardType typeCheck = cookingmushrooms.get(i).getType();
+            if (typeCheck.equals(CardType.BUTTER)) {
+                butterNumber++;
             }
-            if (type.equals(CardType.CIDER)) {
-                ciderSize++;
+            if (typeCheck.equals(CardType.CIDER)) {
+                ciderNumber++;
             }
         }
-        if (identicalMushroomsSize - butterSize * 4 - ciderSize * 5 < 0) {
+        if (identicalMushroomsSize - butterNumber * 4 - ciderNumber * 5 < 0) {
             return false;
         }
 
@@ -240,40 +241,38 @@ public class Player {
         if (identicalCard.getType().equals(CardType.NIGHTMUSHROOM)) {
             point = point / 2;
         }
-        this.score += point * identicalMushroomsSize + butterSize * 3 + ciderSize * 5;
+        this.score += point * identicalMushroomsSize + butterNumber * 3 + ciderNumber * 5;
 
-
-        ArrayList<Card> copyHandCardList = new ArrayList<>();
+        ArrayList<Card> copyHand = new ArrayList<>();
         for (int i = 0; i < this.getHand().size(); i++) {
-            copyHandCardList.add(this.getHand().getElementAt(i));
+            copyHand.add(this.getHand().getElementAt(i));
         }
 
 
-        Iterator<Card> copyHandCardListIter = copyHandCardList.iterator();
-        while (copyHandCardListIter.hasNext()) {
+        Iterator<Card> copyHandIterator = copyHand.iterator();
+        while (copyHandIterator.hasNext()) {
             if (copyList.size() == 0) {
                 break;
             }
-            Card handCard = copyHandCardListIter.next();
-            Iterator<Card> copyListIter = copyList.iterator();
-            while (copyListIter.hasNext()) {
-                Card cookCard = copyListIter.next();
+            Card handCard = copyHandIterator.next();
+            Iterator<Card> copyListIterator = copyList.iterator();
+            while (copyListIterator.hasNext()) {
+                Card cookCard = copyListIterator.next();
                 if (cookCard.getName().equals(handCard.getName()) && cookCard.getType().equals(handCard.getType())) {
-                    copyHandCardListIter.remove();
-                    copyListIter.remove();
+                    copyHandIterator.remove();
+                    copyListIterator.remove();
                     break;
                 }
             }
         }
-
 
         if (this.getHand().size() != 0) {
             int handSize = this.getHand().size();
             for (int i = 0; i < handSize; i++) {
                 this.getHand().removeElement(0);
             }
-            for (int i = 0; i < copyHandCardList.size(); i++) {
-                this.getHand().add(copyHandCardList.get(i));
+            for (int i = 0; i < copyHand.size(); i++) {
+                this.getHand().add(copyHand.get(i));
             }
         }
         return true;
@@ -291,38 +290,36 @@ public class Player {
         cardName = cardName.replaceAll("\\s", "");
         cardName = cardName.toLowerCase();
         
-        int count = 0;
+        int number = 0;
         for (int i = 0; i < this.getHand().size(); i++) {
-            Card card = this.getHand().getElementAt(i);
-            if (card.getName().equals(cardName)) {
-                if (card.getType().equals(CardType.NIGHTMUSHROOM)) {
-                    count += 2;
+            Card cardNeedOne = this.getHand().getElementAt(i);
+            if (cardNeedOne.getName().equals(cardName)) {
+                if (cardNeedOne.getType().equals(CardType.NIGHTMUSHROOM)) {
+                    number += 2;
                 } else {
-                    count++;
+                    number++;
                 }
             }
         }
-        if (count < 2) {
+        if (number < 2) {
             return false;
         }
-        if (count < mushroomNumbers) {
+        if (number < mushroomNumbers) {
             return false;
         }
-        // sell mushrooms
+
         int copyNumber = mushroomNumbers;
-        int stickSum = 0;
+        int sticksNumber = 0;
+
         while (copyNumber > 0) {
             for (int i = 0; i < this.getHand().size(); i++) {
-                Card card = this.getHand().getElementAt(i);
-                if (card.getName().equals(cardName)) {
-                    if (card instanceof Mushroom) {
-                        Mushroom item = (Mushroom) card;
-                        // add stick
-                        stickSum += item.getSticksPerMushroom();
-                        // remove card
+                Card cardNeedOne = this.getHand().getElementAt(i);
+                if (cardNeedOne.getName().equals(cardName)) {
+                    if (cardNeedOne instanceof Mushroom) {
+                        Mushroom findPoint = (Mushroom) cardNeedOne;
+                        sticksNumber += findPoint.getSticksPerMushroom();
                         this.getHand().removeElement(i);
-                        // Take into account that night cards account for two mushrooms
-                        if (item.getType().equals(CardType.NIGHTMUSHROOM)) {
+                        if (findPoint.getType().equals(CardType.NIGHTMUSHROOM)) {
                             copyNumber--;
                         }
                         break;
@@ -331,9 +328,9 @@ public class Player {
             }
             copyNumber--;
         }
-        this.sticks = this.sticks + stickSum;
-        // add Stick to display
-        for (int i = 0; i < stickSum; i++) {
+
+        this.sticks = this.sticks + sticksNumber;
+        for (int i = 0; i < sticksNumber; i++) {
             addCardtoDisplay(new Stick());
         }
         return true;
